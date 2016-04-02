@@ -9,6 +9,14 @@ typedef enum {
 	kPXRFileBrowserModeLoad
 } kPXRFileBrowserMode;
 
+//LHQ
+typedef enum {
+	kPXRFileBrowserSortModeNone,
+	kPXRFileBrowserSortModeNewerFirst,
+	kPXRFileBrowserSortModeOlderFirst,
+} kPXRFileBrowserSortMode;
+//end LHQ
+
 @protocol PXRFileBrowserDelegate
 - (void)fileBrowserFinishedPickingFile:(NSData*)file withName:(NSString*)fileName;
 - (void)fileBrowserCanceledPickingFile;
@@ -62,6 +70,7 @@ typedef enum {
 @property (nonatomic, retain) IBOutlet UITextField *folderNameField;
 @property (nonatomic, retain) IBOutlet UIView *saveOptions;
 @property (nonatomic, retain) IBOutlet UIView *folderDialog;
+@property (nonatomic, assign) kPXRFileBrowserSortMode sortMode;//LHQ
 
 // these methods are public
 - (void)saveFile:(NSData*)file withType:(NSString*)fileType andDefaultFileName:(NSString*)defaultName;

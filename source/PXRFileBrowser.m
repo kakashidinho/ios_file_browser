@@ -21,6 +21,7 @@
 	[tableData addSection];
 	[self initSizings];
 	isEditingText = NO;
+	_sortMode = kPXRFileBrowserSortModeNone;//LHQ: default sort mode
 }
 
 - (void)initSizings{
@@ -92,6 +93,7 @@
 	}
 	// populate data 
 	NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:currentPath error:NULL];
+	files = [self sortFilesList:files];//LHQ
 	NSString *currFile;
 	BOOL isDir;
 	for(NSString *file in files){
@@ -142,6 +144,62 @@
 	
 	[fileTableView reloadData];
 }
+
+//LHQ
+- (NSArray<NSString*>*) sortFilesList: (NSArray*) list {
+	NSComparisonResult (^sortCompare) (NSString* file1, NSString* file2) = ^(NSString* file1, NSString* file2){
+		NSString* file1FullPath = [NSString stringWithFormat:@"%@/%@", currentPath, file1];
+		NSString* file2FullPath = [NSString stringWithFormat:@"%@/%@", currentPath, file2];
+		
+		NSURL* file1URL = [NSURL fileURLWithPath:file1FullPath];
+		NSURL* file2URL = [NSURL fileURLWithPath:file2FullPath];
+		
+		NSError* error;
+		NSDate *file1Date, *file2Date;
+		BOOL isFile1Directory = NO, isFile2Directory = NO;
+		
+		[[NSFileManager defaultManager] fileExistsAtPath:file1FullPath isDirectory:&isFile1Directory];
+		[[NSFileManager defaultManager] fileExistsAtPath:file2FullPath isDirectory:&isFile2Directory];
+		
+		if (isFile1Directory != isFile2Directory)
+		{
+			//directory should be listed first
+			if (isFile1Directory)
+				return NSOrderedAscending;
+			else
+				return NSOrderedDescending;
+		}
+		
+		//get modification dates
+		error = nil;
+		[file1URL getResourceValue:&file1Date forKey:NSURLContentModificationDateKey error:&error];
+		if (error)
+			file1Date = [NSDate dateWithTimeIntervalSince1970:0];//assume very old file on error
+		
+		error = nil;
+		[file2URL getResourceValue:&file2Date forKey:NSURLContentModificationDateKey error:&error];
+		if (error)
+			file2Date = [NSDate dateWithTimeIntervalSince1970:0];//assume very old file on error
+		
+		//compare modification dates
+		switch (_sortMode) {
+			case kPXRFileBrowserSortModeNewerFirst:
+				return [file2Date compare:file1Date];
+			case kPXRFileBrowserSortModeOlderFirst:
+				return [file1Date compare:file2Date];
+			default:
+				return NSOrderedSame;//don't care
+		}
+	};
+	
+	//filter out the correct save files and sort them
+	NSArray* sortedList = [list sortedArrayUsingComparator:sortCompare];
+	if (sortedList == nil)
+		return list;
+	
+	return sortedList;
+}
+//end LHQ
 
 - (BOOL)fileShouldBeHidden:(NSString*)fileName{
 	int max = 1;
