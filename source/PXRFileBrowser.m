@@ -209,13 +209,11 @@
 	if(checkEmpty.length == 0){
 		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Folder has no name" message:[NSString stringWithFormat:@"A folder name cannot be empty.", fileNameField.text] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
 		[alert show];
-		[alert release];
 		return;
 	}
 	if([[NSFileManager defaultManager] fileExistsAtPath:newPath]){
 		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Folder exists" message:[NSString stringWithFormat:@"A folder with the name \"%@\" already exists.", folderNameField.text] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
 		[alert show];
-		[alert release];
 		return;
 	}
 	[[NSFileManager defaultManager] createDirectoryAtPath:newPath withIntermediateDirectories:YES attributes:nil error:NULL];
@@ -248,11 +246,9 @@
         }
     }
 	if(shouldAllowChange){
-        [newReplacement release];
         return YES;
     }else{
         [textField setText:[[textField text] stringByReplacingCharactersInRange:range withString:newReplacement ]];
-        [newReplacement release];
         return NO;
     }
 	return YES;
@@ -290,23 +286,22 @@
 - (void)saveFile:(NSData*)file withType:(NSString*)fileType andDefaultFileName:(NSString*)defaultName{
 	saveOptions.hidden = false;
 	fileNameField.text = defaultName;
-	fileToSave = [file retain];
-	fileTypeToUse = [fileType retain];
+	fileToSave = file;
+	fileTypeToUse = fileType;
 	browserMode = kPXRFileBrowserModeSave;
 }
 
 - (void)browseForFileWithType:(NSString*)fileType{
 	saveOptions.hidden = true;
-	fileTypeToUse = [fileType retain];
+	fileTypeToUse = fileType;
 	fileTypes = [NSArray arrayWithObject:fileType];
-	[fileTypes retain];
 	browserMode = kPXRFileBrowserModeLoad;
 	[self resetPath];
 }
 
 - (void)browseForFileWithTypes:(NSArray*)ft{
 	saveOptions.hidden = true;
-	fileTypes = [ft retain];
+	fileTypes = ft;
 	browserMode = kPXRFileBrowserModeLoad;
 	[self resetPath];
 }
@@ -324,8 +319,8 @@
 - (void)confirmedFileOverWrite{
 	NSString *fileLoc = [currentPath stringByAppendingFormat:@"%@.%@", fileNameField.text, fileTypeToUse];
 	[fileToSave writeToFile:fileLoc atomically:YES];
-	[fileToSave release];
-	[fileTypeToUse release];
+	fileToSave = nil;
+	fileTypeToUse = nil;
 	if(delegate){
 		if([delegate respondsToSelector:@selector(fileBrowserFinishedSavingFileNamed:)]){
 			[delegate fileBrowserFinishedSavingFileNamed:fileLoc];
@@ -350,12 +345,12 @@
 		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"File exists" message:[NSString stringWithFormat:@"A file with the name \"%@\" already exists, are you sure you want to overwrite it?", fileNameField.text] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
 		[alert addButtonWithTitle:@"Ok"];
 		[alert show];
-		[alert release];
+		alert = nil;
 		return;
 	}
 	[fileToSave writeToFile:fileLoc atomically:YES];
-	[fileToSave release];
-	[fileTypeToUse release];
+	fileToSave = nil;
+	fileTypeToUse = nil;
 	if(delegate){
 		if([delegate respondsToSelector:@selector(fileBrowserFinishedSavingFileNamed:)]){
 			[delegate fileBrowserFinishedSavingFileNamed:fileLoc];
@@ -372,7 +367,7 @@
 				[delegate fileBrowserCanceledSavingFile:fileToSave]; 
 			}
 		}
-		[fileToSave release];
+		fileToSave = nil;
 	}else if(browserMode == kPXRFileBrowserModeLoad){
 		if(delegate){
 			if([delegate respondsToSelector:@selector(fileBrowserCanceledPickingFile:)]){
@@ -465,13 +460,13 @@
 
 - (void)dealloc {
 	if(fileTypes){
-		[fileTypes release];
+		fileTypes = nil;
 	}
 	folderNameField.delegate = nil;
 	fileNameField.delegate = nil;
 	fileTableView.delegate = nil;
 	[paths removeAllObjects];
-	[paths release];
+	paths = nil;
 	self.fileTableView = nil;
 	self.fileNameField = nil;
 	self.currentPath = nil;
@@ -481,7 +476,6 @@
 	self.folderNameField = nil;
 	self.folderDialog = nil;
 	self.delegate = nil;
-    [super dealloc];
 }
 
 

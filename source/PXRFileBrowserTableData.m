@@ -12,9 +12,7 @@
 	if(!c) {
 		loader = [[UITableCellLoader alloc] initWithNibName:@"PXRFileBrowserTableCell"];
 		[loader load];
-		c = [(UITableCellLoader *)[loader nibbedCell] retain];
-		[loader release];
-		[c autorelease];
+		c = (PXRFileBrowserTableCell*)[loader nibbedCell];
 	}
 	[c reset];
 	[c addData:d];
@@ -34,7 +32,6 @@
 
 - (void)dealloc {
 	self.delegate = nil;
-    [super dealloc];
 }
 
 @end

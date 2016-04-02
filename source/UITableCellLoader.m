@@ -19,11 +19,8 @@
 }
 
 - (void) dealloc {
-	[nibName release];
-	[nibbedCell release];
 	nibName = nil;
 	nibbedCell = nil;
-	[super dealloc];
 }
 
 @end

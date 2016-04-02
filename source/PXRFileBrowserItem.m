@@ -13,13 +13,12 @@
 	d.path = p;
 	d.isDirectory = isDir;
 	d.isSelectable = true;
-	return [d autorelease];
+	return d;
 }
 
 - (void)dealloc{
 	self.fileTitle = nil;
 	self.path = nil;
-	[super dealloc];
 }
 
 @end

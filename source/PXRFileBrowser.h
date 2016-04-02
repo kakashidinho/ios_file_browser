@@ -18,7 +18,7 @@ typedef enum {
 
 @interface PXRFileBrowser : UIViewController <UITableViewDelegate, UIAlertViewDelegate, UITextFieldDelegate>{
 	NSString *currentPath;
-	NSObject <PXRFileBrowserDelegate> *delegate;
+	NSObject <PXRFileBrowserDelegate> __unsafe_unretained *delegate;
 	NSMutableArray *paths;
 	NSData *fileToSave;
 	NSString *fileTypeToUse;

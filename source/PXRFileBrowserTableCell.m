@@ -36,7 +36,6 @@
 	self.filePath = nil;
 	self.fileLabel = nil;
 	self.icon = nil;
-    [super dealloc];
 }
 
 @end

@@ -13,7 +13,6 @@
 - (void) addSection {
 	NSMutableArray * a = [[NSMutableArray alloc] init];
 	[data addObject:a];
-	[a release];
 }
 
 - (NSMutableArray *) dataInSection:(NSInteger) section {
@@ -73,9 +72,7 @@
 	#ifdef ACNSLogDealloc
 	NSLog(@"DEALLOC UITableDataSourceController");
 	#endif
-	[data release];
 	data = nil;
-	[super dealloc];
 }
 
 @end

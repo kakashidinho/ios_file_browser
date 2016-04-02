@@ -13,7 +13,7 @@
 
 @interface PXRFileBrowserTableData : UITableDataSourceController{
 	UITableCellLoader * loader;
-	NSObject <PXRFileBrowserTableDataDelegate> *delegate;
+	NSObject <PXRFileBrowserTableDataDelegate> __unsafe_unretained *delegate;
 }
 @property (nonatomic, assign) id delegate;
 
