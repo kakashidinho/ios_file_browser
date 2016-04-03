@@ -342,13 +342,13 @@
 }
 
 - (IBAction)loadFileFromDisk:(NSString*)path{
+	[self dismissModalViewControllerAnimated:YES];
 	NSData *file = _autoLoadPickedFile? [NSData dataWithContentsOfFile:path]: nil;
 	if(delegate){
 		if([delegate respondsToSelector:@selector(fileBrowserFinishedPickingFile:withName:)]){
 			[delegate fileBrowserFinishedPickingFile:file withName:path];
 		}
 	}
-	[self dismissModalViewControllerAnimated:YES];
 }
 
 - (void)saveFile:(NSData*)file withType:(NSString*)fileType andDefaultFileName:(NSString*)defaultName{
@@ -405,13 +405,13 @@
 	[fileToSave writeToFile:fileLoc atomically:YES];
 	fileToSave = nil;
 	fileTypeToUse = nil;
+	[self refreshView];
+	[self dismissModalViewControllerAnimated:YES];
 	if(delegate){
 		if([delegate respondsToSelector:@selector(fileBrowserFinishedSavingFileNamed:)]){
 			[delegate fileBrowserFinishedSavingFileNamed:fileLoc];
 		}
 	}
-	[self refreshView];
-	[self dismissModalViewControllerAnimated:YES];
 }
 
 - (void)confirmedFolderOverWrite{
@@ -435,16 +435,18 @@
 	[fileToSave writeToFile:fileLoc atomically:YES];
 	fileToSave = nil;
 	fileTypeToUse = nil;
+	[self refreshView];
+	[self dismissModalViewControllerAnimated:YES];
+	
 	if(delegate){
 		if([delegate respondsToSelector:@selector(fileBrowserFinishedSavingFileNamed:)]){
 			[delegate fileBrowserFinishedSavingFileNamed:fileLoc];
 		}
 	}
-	[self refreshView];
-	[self dismissModalViewControllerAnimated:YES];
 }
 
 - (IBAction)cancel{
+	[self dismissModalViewControllerAnimated:YES];
 	if(browserMode == kPXRFileBrowserModeSave){
 		if(delegate){
 			if([delegate respondsToSelector:@selector(fileBrowserCanceledSavingFile:)]){
@@ -459,7 +461,6 @@
 			}
 		}
 	}
-	[self dismissModalViewControllerAnimated:YES];
 }
 
 - (IBAction)fileNameBeganEditing{
