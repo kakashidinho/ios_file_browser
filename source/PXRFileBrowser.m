@@ -2,6 +2,10 @@
 #import "PXRFileBrowserTableData.h"
 #import "UIView+Additions.h"
 
+@interface PXRFileBrowser()
+@property (strong) NSString* parentPath;
+@end
+
 @implementation PXRFileBrowser
 @synthesize delegate;
 @synthesize fileNameField;
@@ -15,13 +19,13 @@
 @synthesize folderDialog;
 
 - (void)setup{
-	paths = [[NSMutableArray alloc] init];
 	tableData = [[PXRFileBrowserTableData alloc] init];
 	tableData.delegate = self;
 	[tableData addSection];
 	[self initSizings];
 	isEditingText = NO;
 	_sortMode = kPXRFileBrowserSortModeNone;//LHQ: default sort mode
+	_autoLoadPickedFile = YES;//LHQ
 }
 
 - (void)initSizings{
@@ -65,7 +69,10 @@
 - (void)viewDidLoad{
 	fileTableView.delegate = self;
 	[fileTableView setDataSource:tableData];
-	[self resetPath];
+	if (currentPath == nil)
+		[self resetPath];
+	else
+		[self refreshView];
 	
 	folderDialog.hidden = true;
 	
@@ -78,19 +85,22 @@
 }
 
 - (void)resetPath{
-	[paths removeAllObjects];
-	NSString *dirPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/"];
-	[paths addObject:dirPath];
+	//documents folder
+	NSArray *documentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	NSString *documentsDirectory = [documentPaths objectAtIndex:0];
+	
+	currentPath = documentsDirectory;
+	
 	[self refreshView];
 }
 
 - (void)refreshView{
 	int fileCount = 0;
 	[tableData removeAllItemsInSection:0];
-	self.currentPath = @"";
-	for (NSString *path in paths) {
-		self.currentPath = [currentPath stringByAppendingString:path];
-	}
+	
+	if ([currentPath characterAtIndex:[currentPath length] - 1] != '/')
+		currentPath = [currentPath stringByAppendingString:@"/"];
+	
 	// populate data 
 	NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:currentPath error:NULL];
 	files = [self sortFilesList:files];//LHQ
@@ -122,12 +132,22 @@
 		}
 	}
 	// check back button
-	if(paths.count <= 1){
-		backButton.userInteractionEnabled = false;
-		backButton.alpha = .2;
-	}else {
+	BOOL hasParentDir = NO;
+	NSString* parentDir = [currentPath stringByDeletingLastPathComponent];
+	if (parentDir != nil && [parentDir length] > 0 &&
+		[[NSFileManager defaultManager] fileExistsAtPath:parentDir isDirectory:&hasParentDir] &&
+		[[NSFileManager defaultManager] isReadableFileAtPath:parentDir] &&
+		hasParentDir) {
 		backButton.userInteractionEnabled = true;
 		backButton.alpha = 1;
+		
+		_parentPath = parentDir;
+	}
+	else{
+		backButton.userInteractionEnabled = false;
+		backButton.alpha = .2;
+		
+		_parentPath = nil;
 	}
 	
 	if(fileCount == 1) {
@@ -136,11 +156,7 @@
 		folderContents.text = [NSString stringWithFormat:@"%d items", fileCount]; 
 	}
 	
-	if(paths.count <= 1){
-		folderTitle.text = @"Documents";
-	}else{
-		folderTitle.text = [[paths lastObject] stringByDeletingPathExtension];
-	}
+	folderTitle.text = [currentPath lastPathComponent];
 	
 	[fileTableView reloadData];
 }
@@ -313,26 +329,20 @@
 }
 
 - (void)openFolderNamed:(NSString*)folderName{
-	NSString *newDir = [folderName stringByAppendingString:@"/"];
-	[paths addObject:newDir];
-	self.currentPath = @"";
-	for (NSString *path in paths) {
-		self.currentPath = [currentPath stringByAppendingString:path];
-	}
+	currentPath = [currentPath stringByAppendingString:folderName];
+	
 	[self refreshView];
 }
 
 - (IBAction)back{
-	if(paths.count <= 1) return;
-	[paths removeLastObject];
-	for (NSString *path in paths) {
-		self.currentPath = [currentPath stringByAppendingString:path];
-	}
+	if (_parentPath != nil)
+		currentPath = _parentPath;
+	
 	[self refreshView];
 }
 
 - (IBAction)loadFileFromDisk:(NSString*)path{
-	NSData *file = [NSData dataWithContentsOfFile:path];
+	NSData *file = _autoLoadPickedFile? [NSData dataWithContentsOfFile:path]: nil;
 	if(delegate){
 		if([delegate respondsToSelector:@selector(fileBrowserFinishedPickingFile:withName:)]){
 			[delegate fileBrowserFinishedPickingFile:file withName:path];
@@ -356,6 +366,22 @@
 	browserMode = kPXRFileBrowserModeLoad;
 	[self resetPath];
 }
+
+//LHQ
+- (void)browseForFileWithType:(NSString*)fileType inDirectory: (NSString*) fullPath{
+	saveOptions.hidden = true;
+	fileTypeToUse = fileType;
+	fileTypes = [NSArray arrayWithObject:fileType];
+	browserMode = kPXRFileBrowserModeLoad;
+	if (fullPath != nil)
+	{
+		currentPath = fullPath;
+		[self refreshView];
+	}
+	else
+		[self resetPath];
+}
+//end LHQ
 
 - (void)browseForFileWithTypes:(NSArray*)ft{
 	saveOptions.hidden = true;
@@ -428,7 +454,7 @@
 		fileToSave = nil;
 	}else if(browserMode == kPXRFileBrowserModeLoad){
 		if(delegate){
-			if([delegate respondsToSelector:@selector(fileBrowserCanceledPickingFile:)]){
+			if([delegate respondsToSelector:@selector(fileBrowserCanceledPickingFile)]){
 				[delegate fileBrowserCanceledPickingFile];
 			}
 		}
@@ -523,8 +549,6 @@
 	folderNameField.delegate = nil;
 	fileNameField.delegate = nil;
 	fileTableView.delegate = nil;
-	[paths removeAllObjects];
-	paths = nil;
 	self.fileTableView = nil;
 	self.fileNameField = nil;
 	self.currentPath = nil;

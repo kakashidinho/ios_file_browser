@@ -27,7 +27,6 @@ typedef enum {
 @interface PXRFileBrowser : UIViewController <UITableViewDelegate, UIAlertViewDelegate, UITextFieldDelegate>{
 	NSString *currentPath;
 	NSObject <PXRFileBrowserDelegate> __unsafe_unretained *delegate;
-	NSMutableArray *paths;
 	NSData *fileToSave;
 	NSString *fileTypeToUse;
 	
@@ -71,10 +70,12 @@ typedef enum {
 @property (nonatomic, retain) IBOutlet UIView *saveOptions;
 @property (nonatomic, retain) IBOutlet UIView *folderDialog;
 @property (nonatomic, assign) kPXRFileBrowserSortMode sortMode;//LHQ
+@property (nonatomic, assign) BOOL autoLoadPickedFile;//LHQ: if YES, picked file's date will be loaded automatically and passed to delegate's method "fileBrowserFinishedPickingFile". Default is YES
 
 // these methods are public
 - (void)saveFile:(NSData*)file withType:(NSString*)fileType andDefaultFileName:(NSString*)defaultName;
 - (void)browseForFileWithType:(NSString*)fileType;
+- (void)browseForFileWithType:(NSString*)fileType inDirectory: (NSString*) fullPath;//LHQ
 - (void)browseForFileWithTypes:(NSArray*)ft;
 - (IBAction)cancel;
 
