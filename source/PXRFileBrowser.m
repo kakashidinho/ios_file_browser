@@ -342,7 +342,7 @@
 }
 
 - (IBAction)loadFileFromDisk:(NSString*)path{
-	[self dismissModalViewControllerAnimated:YES];
+	[self dismissViewControllerAnimated:YES completion:nil];
 	NSData *file = _autoLoadPickedFile? [NSData dataWithContentsOfFile:path]: nil;
 	if(delegate){
 		if([delegate respondsToSelector:@selector(fileBrowserFinishedPickingFile:withName:)]){
@@ -406,7 +406,7 @@
 	fileToSave = nil;
 	fileTypeToUse = nil;
 	[self refreshView];
-	[self dismissModalViewControllerAnimated:YES];
+	[self dismissViewControllerAnimated:YES completion:nil];
 	if(delegate){
 		if([delegate respondsToSelector:@selector(fileBrowserFinishedSavingFileNamed:)]){
 			[delegate fileBrowserFinishedSavingFileNamed:fileLoc];
@@ -436,7 +436,7 @@
 	fileToSave = nil;
 	fileTypeToUse = nil;
 	[self refreshView];
-	[self dismissModalViewControllerAnimated:YES];
+	[self dismissViewControllerAnimated:YES completion:nil];
 	
 	if(delegate){
 		if([delegate respondsToSelector:@selector(fileBrowserFinishedSavingFileNamed:)]){
@@ -446,7 +446,7 @@
 }
 
 - (IBAction)cancel{
-	[self dismissModalViewControllerAnimated:YES];
+	[self dismissViewControllerAnimated:YES completion:nil];
 	if(browserMode == kPXRFileBrowserModeSave){
 		if(delegate){
 			if([delegate respondsToSelector:@selector(fileBrowserCanceledSavingFile:)]){
